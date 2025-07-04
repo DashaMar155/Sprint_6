@@ -15,12 +15,12 @@ class MainPage(BasePage):
         final_answer_locator = self.format_locator(locators.answer_locator, num)
         return self.get_text_from_element(final_answer_locator)
 
-    @allure.step("Прокручиваем страницу до последнего вопроса и ждем, пока все загрузится")
+    @allure.step("Прокручиваем страницу до последнего вопроса и ждём, пока он появится")
     def scroll_to_down(self):
         self.scroll_down()
-        self.find_element_with_wait(locators.scroll_locator)
+        self.wait_for_element(locators.scroll_locator)
 
-    @allure.step("Получаем текст вопроса (проверяем, что мы на Главной странице)")
+    @allure.step("Получаем текст вопроса (проверка, что мы на главной)")
     def get_text_from_last_question(self):
         self.scroll_down()
         return self.get_text_from_element(locators.scroll_locator)
@@ -28,6 +28,5 @@ class MainPage(BasePage):
     # статический метод для форматирования локаторов
     @staticmethod
     def format_locator(locator, num):
-        by, locator_for_format = locator
-        format_locator = locator_for_format.format(num)
-        return by, format_locator
+        by, locator_template = locator
+        return by, locator_template.format(num)

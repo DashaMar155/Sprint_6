@@ -1,45 +1,77 @@
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 
 
 class BasePage:
-    def __init__(self, driver):
+    def __init__(self, driver, timeout=5):
         self.driver = driver
+        self.timeout = timeout
+        self.wait = WebDriverWait(driver, timeout)
 
-    # Ждем, пока элемент появится и возвращаем его
+    # Ожидаем появления элемента и возвращаем его
     def find_element_with_wait(self, locator):
-        return WebDriverWait(self.driver, 5).until(expected_conditions.visibility_of_element_located(locator))
+        return self.wait.until(EC.visibility_of_element_located(locator))
 
-    # Ждем, пока элемент станет кликабельным и нажимаем на него
+    # Ожидаем кликабельности элемента и кликаем
     def click_on_element(self, locator):
-        element = (WebDriverWait(self.driver, 5).until(expected_conditions.element_to_be_clickable(locator)))
+        element = self.wait.until(EC.element_to_be_clickable(locator))
         element.click()
 
-    # Получаем текст элемента и возвращаем его
+    # Получаем текст из элемента
     def get_text_from_element(self, locator):
-        element = self.find_element_with_wait(locator)
-        return element.text
+        return self.find_element_with_wait(locator).text
 
-    # Заполняем поле текстом
+    # Вводим текст в поле (с предварительной очисткой)
     def fill_text_to_field(self, locator, text):
-        self.find_element_with_wait(locator).send_keys(text)
+        element = self.find_element_with_wait(locator)
+        element.clear()
+        element.send_keys(text)
 
-    # Переходим по полученному url
+    # Вводим текст и нажимаем ENTER
+    def fill_the_field_and_click_enter(self, locator, text):
+        element = self.find_element_with_wait(locator)
+        element.clear()
+        element.send_keys(text)
+        element.send_keys(Keys.ENTER)
+
+    # Открываем указанный URL
     def go_to_url(self, url):
         self.driver.get(url)
 
-    # Прокручиваем страницу до выбранного элемента и ждем пока все прогрузится
+    # Скроллим страницу до элемента
     def scroll_to_element(self, locator):
-        self.driver.execute_script('arguments[0].scrollIntoView();', self.find_element_with_wait(locator))
-        self.find_element_with_wait(locator)
+        element = self.find_element_with_wait(locator)
+        self.driver.execute_script('arguments[0].scrollIntoView();', element)
 
-    # Прокручиваем страницу до конца
+    # Скроллим в конец страницы
     def scroll_down(self):
         self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight)')
 
-    # Вводим данные в поле и подтверждаем ввод кнопкой ENTER
-    def fill_the_field_and_click_enter(self, locator, text):
-        element = self.find_element_with_wait(locator)
-        element.send_keys(text)
-        element.send_keys(Keys.ENTER)
+    # Переключаемся на вкладку по индексу
+    def switch_to_tab(self, index: int):
+        WebDriverWait(self.driver, self.timeout).until(
+            lambda d: len(d.window_handles) > abs(index) if index < 0 else index < len(d.window_handles)
+        )
+        self.driver.switch_to.window(self.driver.window_handles[index])
+
+    # Ожидаем смены URL
+    def wait_until_url_changes_from(self, url: str):
+        WebDriverWait(self.driver, self.timeout).until(lambda d: d.current_url != url)
+
+    # Получаем текущий URL
+    def get_current_url(self):
+        return self.driver.current_url
+
+    # Универсальное ожидание видимости элемента (по смыслу, а не по названию)
+    def wait_for_element(self, locator):
+        return self.find_element_with_wait(locator)
+
+    # Проверка, отображается ли элемент на странице
+    def is_element_visible(self, locator):
+        try:
+            self.find_element_with_wait(locator)
+            return True
+        except:
+            return False
+
