@@ -1,4 +1,5 @@
 import allure
+
 from pages.header import Header
 from pages.main_page import MainPage
 
@@ -11,10 +12,8 @@ class TestHeaderRelocations:
         header.click_on_samokat_logo()
         redirect_page = MainPage(driver_order_page)
         control_text = redirect_page.get_text_from_last_question()
-        # переиспользуем уже созданный для скролла страницы локатор
-        # в тексте вопроса по этому локатору опечатка, "жизу" вместо "живу", потенциально текст будет изменяться
-        # поэтому не будем привязываться к полному совпадению, проверим включение части текста,
-        # для проверки правильной страницы этого достаточно
+
+        # не полное совпадение текста — достаточно включения ключевой фразы
         assert "МКАД" in control_text
 
     @allure.title("Переадресация в новой вкладке при клике на лого Яндекса")

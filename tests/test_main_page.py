@@ -1,9 +1,12 @@
 from time import sleep
+import time  # или: from time import sleep
 
-import allure
 import pytest
+import allure
+
 from data import answers_text
 from pages.main_page import MainPage
+
 
 class TestMainPage:
     @allure.title('Главная страница: Вопросы о важном')
